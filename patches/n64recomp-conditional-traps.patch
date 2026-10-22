@@ -1,0 +1,25 @@
+diff --git i/src/recompilation.cpp w/src/recompilation.cpp
+index c228433..8b07d72 100644
+--- i/src/recompilation.cpp
++++ w/src/recompilation.cpp
+@@ -732,6 +732,20 @@ bool process_instruction(GeneratorType& generator, const N64Recomp::Context& con
+         handled = true;
+     }
+ 
++    // Conditional traps (GCC's divide-by-zero check, `teq $divisor, $zero, 7`): trap like `break`
++    // when the condition holds.
++    if (instr_id == InstrId::cpu_teq || instr_id == InstrId::cpu_tne) {
++        static const ConditionalBranchOp teq_op{ BinaryOpType::Equal, {{ UnaryOpType::None, UnaryOpType::None }, { Operand::Rs, Operand::Rt }}, false, false };
++        static const ConditionalBranchOp tne_op{ BinaryOpType::NotEqual, {{ UnaryOpType::None, UnaryOpType::None }, { Operand::Rs, Operand::Rt }}, false, false };
++        print_indent();
++        generator.emit_branch_condition(instr_id == InstrId::cpu_teq ? teq_op : tne_op, instruction_context);
++        print_indent();
++        generator.emit_do_break(instr_vram);
++        print_indent();
++        generator.emit_branch_close();
++        handled = true;
++    }
++
+     auto find_store_it = store_ops.find(instr_id);
+     if (find_store_it != store_ops.end()) {
+         print_indent();

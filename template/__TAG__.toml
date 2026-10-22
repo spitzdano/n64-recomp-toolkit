@@ -1,0 +1,97 @@
+# __TAG__.toml: N64Recomp config for __INTERNAL_NAME__ (__GAMECODE__ v__VERSION__).
+# Run through tools/recomp.sh. Paths are relative to this file.
+# Every key N64Recomp (__N64RECOMP_SHORT__) reads is listed; the commented ones are optional.
+
+[input]
+# Entry point (the real one, after CIC adjustment; from rominfo.json).
+entrypoint = __ENTRYPOINT__
+
+# Input: either an ELF (from tools/build_elf.sh)...
+elf_path = "build/__TAG__.elf"
+# ...or a symbol file plus the ROM (e.g. from `N64Recomp __TAG__.toml --dump-context`).
+# symbols_file_path = "syms/__TAG__.syms.toml"
+# rom_file_path = "baserom.z64"
+
+# Where the generated C goes (tools/recomp.sh recreates it each run).
+output_func_path = "RecompiledFuncs"
+
+# Overlays relocated at runtime: a text file listing their section names.
+# relocatable_sections_path = "overlays.txt"
+
+# Set if the game runs the FPU in MIPS III mode (FR=1, -mfp64). Default false (-mfp32).
+# uses_mips3_float_mode = false
+
+# Suffix the ELF's bss sections use (default ".bss").
+# bss_section_suffix = ".bss"
+
+# Functions missing from the ELF's symbol table, so N64Recomp can find them.
+# manual_funcs = [
+#     { name = "func_80001234", section = ".text", vram = 0x80001234, size = 0x40 },
+# ]
+
+# Override a function's size when the symbol table's is wrong.
+# function_sizes = [
+#     { name = "func_80001234", size = 0x40 },
+# ]
+
+# Emit everything into one file instead of functions_per_output_file per file.
+# single_file_output = false
+# functions_per_output_file = 50
+
+# Treat symbols as absolute addresses (patch ELFs).
+# use_absolute_symbols = false
+
+# Also write the raw binary of the input (patch ELFs).
+# output_binary_path = "patches.bin"
+
+# Warn about LO16 relocations with no matching HI16 (default true).
+# unpaired_lo16_warnings = true
+
+# Read function boundaries from .mdebug sections (games built with IDO and debug info).
+# use_mdebug = false
+# mdebug_file_mappings = [ { filename = "foo.c", input_section = ".text", output_section = ".text" } ]
+
+# Line(s) written at the top of each generated file (default: #include "recomp.h").
+# recomp_include = "#include \"recomp.h\""
+
+# Print every function call at runtime (slow; for chasing crashes).
+# trace_mode = false
+
+# Patch-ELF mode only: symbols of the base game, so patches can call into it.
+# func_reference_syms_file = "syms/__TAG__.syms.toml"
+# data_reference_syms_files = [ "syms/__TAG__.datasyms.toml" ]
+# allow_exports = false
+# strict_patch_mode = false
+
+[patches]
+# Functions replaced by an empty body that returns. Each one needs a reason in README.md.
+stubs = []
+
+# Functions not recompiled at all (the runtime or src/ provides them). Reasons in README.md.
+ignored = []
+
+# Functions renamed to <name>_recomp in the output, so they can't clash with C or the runtime.
+# N64Recomp already renames libc names (memcpy, sinf, strlen, ...) on its own, but not `main`:
+# new-game.sh lists it here when splat's create_config named the entrypoint's target `main`.
+# N64Recomp aborts if a name here doesn't exist, so drop `main` if a decomp config renames it.
+renamed = __RENAMED__
+
+# Replace one instruction (e.g. to remove an osSetTimer call that stalls a thread).
+# [[patches.instruction]]
+# func = "func_80001234"
+# vram = 0x80001250
+# value = 0x00000000   # nop
+
+# Insert C text before an instruction.
+# [[patches.hook]]
+# func = "func_80001234"
+# before_vram = 0x80001250
+# text = "recomp_printf(\"hit\\n\");"
+
+# Symbol-file input only: sections and their functions, if not using elf_path.
+# [[section]]
+# name = ".text"
+# rom = 0x1000
+# vram = 0x80000400
+# size = 0x1000
+# functions = [ { name = "entrypoint", vram = 0x80000400, size = 0x60 } ]

@@ -1,0 +1,13 @@
+# Built or fetched by build.sh / runtime-check.sh
+/.venv/
+/src/
+/bin/
+/.runtime-check/
+/runtime-check.log
+/opt/
+__pycache__/
+
+# C1: the toolkit never holds a ROM or anything derived from one.
+*.z64
+*.n64
+*.v64

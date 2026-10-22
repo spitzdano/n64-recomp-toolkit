@@ -1,0 +1,29 @@
+# aspMain.__REGION__.toml: RSPRecomp config for the game's audio microcode.
+# Run through tools/recomp.sh. Every key RSPRecomp (__N64RECOMP_SHORT__) reads is listed.
+# Find the values from the game's symbols (e.g. aspMainTextStart) or with
+# ucode_scan.py, then confirm text_address from how the microcode is loaded.
+# RSPRecomp refuses to run until text_offset, text_size and text_address are set.
+
+# ROM offset and size of the microcode's text (IMEM code).
+# text_offset = 0x0
+# text_size = 0x0
+
+# IMEM address the text is loaded at. 0x04001080 is common (after rspboot's 0x80 bytes);
+# some games load at 0x04001000. Confirm before trusting it.
+# text_address = 0x04001080
+
+rom_file_path = "baserom.z64"
+output_file_path = "rsp/aspMain.cpp"
+output_function_name = "aspMain"
+
+# IMEM addresses reached by indirect jumps (jr) that RSPRecomp can't find on its own.
+# Gather these from RSPRecomp's failures.
+extra_indirect_branch_targets = []
+
+# IMEM addresses of instructions RSPRecomp should treat as unsupported (abort if reached).
+# unsupported_instructions = []
+
+# Microcode overlays swapped into IMEM at runtime.
+# [[overlay_slots]]
+# text_address = 0x04001000
+# overlays = [ { offset = 0x0, size = 0x0 } ]

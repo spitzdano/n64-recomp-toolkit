@@ -1,0 +1,25 @@
+diff --git i/src/analysis.cpp w/src/analysis.cpp
+index 9eaaa30..b622547 100644
+--- i/src/analysis.cpp
++++ w/src/analysis.cpp
+@@ -122,11 +122,16 @@ bool analyze_instruction(const rabbitizer::InstructionCpu& instr, const N64Recom
+ 
+             temp = reg_states[valid_got_loaded_reg];
+         }
+-        // Exactly one of the two addend register states should have a valid lui at this time
+-        else if (reg_states[rs].valid_lui != reg_states[rt].valid_lui) {
++        // Exactly one of the two addend register states should have a valid lui at this time. Or both, when one of
++        // them is stale: this pass is linear, so the index register can still hold a jump table pointer computed in the
++        // straight-line code before an earlier `jr` (GCC puts switch dispatch blocks one after another, each reached
++        // by a branch). The fresh base is the one without an addend yet.
++        else if (reg_states[rs].valid_lui != reg_states[rt].valid_lui ||
++                 (reg_states[rs].valid_lui && reg_states[rs].valid_addend != reg_states[rt].valid_addend)) {
+             // Track which of the two registers has the valid lui state and which is the addend
+-            int valid_lui_reg = reg_states[rs].valid_lui ? rs : rt;
+-            int addend_reg = reg_states[rs].valid_lui ? rt : rs;
++            bool rs_is_base = reg_states[rs].valid_lui != reg_states[rt].valid_lui ? reg_states[rs].valid_lui : !reg_states[rs].valid_addend;
++            int valid_lui_reg = rs_is_base ? rs : rt;
++            int addend_reg = rs_is_base ? rt : rs;
+ 
+             // Copy the lui reg's state into the destination reg, then set the destination reg's addend to the other operand
+             temp = reg_states[valid_lui_reg];
